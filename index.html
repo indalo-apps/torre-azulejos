@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<!--
+  Torre de Azulejos
+  © 2026 Adela Moreno Vega y Carlos Moreno Otto. Todos los derechos reservados.
+  Prohibida la copia, modificación o distribución total o parcial sin autorización de los autores.
+  https://indalo-apps.github.io/torre-azulejos/
+-->
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="app-version" content="1.0">
+<meta name="theme-color" content="#14325c">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="152x152" href="icon-152.png">
+<link rel="apple-touch-icon" sizes="167x167" href="icon-167.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Torre de Azulejos">
+<title>Torre de Azulejos</title>
+<meta name="author" content="Adela Moreno Vega y Carlos Moreno Otto">
+<meta name="description" content="Juego de un toque: apila azulejos de lacería lo más alto que puedas. Récord, racha de perfectos y reto del día. Autores: Adela Moreno Vega y Carlos Moreno Otto.">
+<meta name="copyright" content="© 2026 Adela Moreno Vega y Carlos Moreno Otto. Todos los derechos reservados.">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="es_ES">
+<meta property="og:site_name" content="Torre de Azulejos">
+<meta property="og:title" content="Torre de Azulejos">
+<meta property="og:description" content="Apila azulejos de lacería lo más alto que puedas. Un toque, partidas cortas y un reto nuevo cada día. Gratis y sin registrarse.">
+<meta property="og:url" content="https://indalo-apps.github.io/torre-azulejos/">
+<meta property="og:image" content="https://indalo-apps.github.io/torre-azulejos/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Torre de Azulejos: una torre de azulejos con estrellas de ocho puntas">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+:root{--bg:#eef2f8;--card:#ffffff;--ink:#14243d;--ink2:#4d5b73;--soft:#e3e9f3;--line:#cfd8e6;--acc:#14325c;--acc-ink:#fff;--link:#1d4f9a;--focus:#2563eb;color-scheme:light}
+:root[data-theme="dark"]{--bg:#0d1626;--card:#18233a;--ink:#e9eef8;--ink2:#a8b4cc;--soft:#22304d;--line:#2f3e5e;--acc:#f0c25a;--acc-ink:#1a1405;--link:#8db8ff;--focus:#8db8ff;color-scheme:dark}
+#juego{background:#0d1626}
+.hud{position:absolute;left:0;right:0;top:calc(14px + env(safe-area-inset-top,0px));text-align:center;color:#fff;pointer-events:none;text-shadow:0 2px 10px rgb(0 0 0 / .45)}
+#h-score{font-size:3.2rem;font-weight:900;line-height:1;font-variant-numeric:tabular-nums}
+#h-sub{font-size:.95rem;font-weight:700;opacity:.9;margin-top:4px;min-height:1.2em}
+.tap-hint{position:absolute;left:50%;bottom:calc(28px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);color:#fff;background:rgb(0 0 0 / .4);padding:10px 18px;border-radius:99px;font-weight:800;pointer-events:none;white-space:nowrap;animation:pulso 1.4s ease-in-out infinite}
+@keyframes pulso{50%{opacity:.55}}
+
+/* ===== Piezas comunes de los juegos (indalo-apps) ===== */
+*{box-sizing:border-box}
+html[data-fs="s"]{font-size:15px} html,html[data-fs="m"]{font-size:17px} html[data-fs="l"]{font-size:19px} html[data-fs="xl"]{font-size:21px} html[data-fs="xxl"]{font-size:24px}
+html,body{margin:0;height:100%}
+body{font-family:ui-rounded,"SF Pro Rounded",system-ui,-apple-system,"Segoe UI",Roboto,"Nunito",sans-serif;background:var(--bg);color:var(--ink);
+  -webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%;overscroll-behavior:none;touch-action:manipulation}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.muted{color:var(--ink2)}
+h1,h2,h3{line-height:1.15}
+
+/* Pantalla de menú */
+#menu{min-height:100%;display:flex;flex-direction:column;align-items:center;
+  padding:calc(12px + env(safe-area-inset-top,0px)) max(18px,env(safe-area-inset-right,0px)) calc(14px + env(safe-area-inset-bottom,0px)) max(18px,env(safe-area-inset-left,0px))}
+.m-wrap{width:100%;max-width:520px;display:flex;flex-direction:column;flex:1}
+.m-top{display:flex;justify-content:flex-end;min-height:48px}
+.icon-btn{width:48px;height:48px;border-radius:50%;border:0;background:var(--card);color:var(--ink);display:grid;place-items:center;font-size:1.35rem;
+  box-shadow:0 2px 10px -4px rgb(0 0 0 / .35)}
+.icon-btn svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.m-hero{text-align:center;margin:4px 0 18px}
+.m-hero img{width:96px;height:96px;border-radius:22px;box-shadow:0 10px 30px -12px rgb(0 0 0 / .5)}
+.m-hero h1{margin:12px 0 4px;font-size:2rem;font-weight:900;letter-spacing:-.02em}
+.m-hero p{margin:0;color:var(--ink2);font-size:1rem}
+.modes{display:flex;flex-direction:column;gap:12px}
+.mode{display:flex;align-items:center;gap:14px;width:100%;text-align:left;border:0;border-radius:20px;padding:14px 16px;min-height:72px;
+  background:var(--card);color:var(--ink);box-shadow:0 4px 16px -10px rgb(0 0 0 / .45)}
+.mode .em{flex:none;width:48px;height:48px;border-radius:14px;display:grid;place-items:center;font-size:1.6rem;background:var(--soft)}
+.mode b{display:block;font-size:1.1rem}
+.mode span.d{display:block;color:var(--ink2);font-size:.88rem;margin-top:2px}
+.mode.main{background:var(--acc);color:var(--acc-ink)}
+.mode.main span.d{color:inherit;opacity:.85}
+.mode.main .em{background:rgb(255 255 255 / .18)}
+.records{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:16px 0 0}
+.rec{background:var(--soft);border-radius:99px;padding:7px 14px;font-weight:700;font-size:.9rem}
+.m-foot{margin-top:auto;padding-top:20px;text-align:center}
+.ver{background:none;border:0;color:var(--ink2);text-decoration:underline;text-underline-offset:3px;padding:12px 8px;min-height:44px;font-size:.88rem}
+
+/* Botones */
+.btn{background:var(--acc);color:var(--acc-ink);border:0;border-radius:99px;padding:11px 20px;font-weight:800;min-height:44px}
+.btn:hover{filter:brightness(1.08)}
+.btn.ghost{background:transparent;color:var(--ink);border:2px solid var(--ink)}
+.btn.block{width:100%}
+.btn:disabled{opacity:.4;cursor:default}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+
+/* Aviso amarillo de instalar */
+.install-banner{display:flex;align-items:center;gap:10px;background:#ffe066;color:#2b2100;border:1.5px solid #e6bf2e;border-radius:14px;padding:10px 6px 10px 12px;margin-bottom:16px;box-shadow:0 6px 18px -10px rgb(0 0 0 / .4)}
+:root[data-theme="dark"] .install-banner{background:#5a4706;color:#fff3c4;border-color:#8a6e12}
+.install-banner img{flex:none;width:38px;height:38px;border-radius:9px}
+.install-banner div{flex:1;min-width:0;font-size:.9rem;line-height:1.3}
+.install-banner b{display:block;font-size:.98rem}
+.install-banner .btn{background:#2b2100;color:#ffe066;padding:10px 14px;font-size:.9rem}
+:root[data-theme="dark"] .install-banner .btn{background:#ffe066;color:#2b2100}
+.install-banner .x{flex:none;width:44px;height:44px;border:0;background:none;font-size:1.5rem;color:inherit}
+@media (max-width:420px){.install-banner div span{display:none}}
+
+/* Hojas (ventanas que suben desde abajo) */
+.sheet-bg{position:fixed;inset:0;background:rgb(5 10 18 / .55);z-index:40;display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--card);color:var(--ink);width:100%;max-width:560px;max-height:88%;overflow-y:auto;border-radius:20px 20px 0 0;position:relative;
+  padding:10px max(18px,env(safe-area-inset-left,0px)) calc(18px + env(safe-area-inset-bottom,0px));animation:up .22s ease-out;outline:none}
+.sheet.drag{transition:none}
+@keyframes up{from{transform:translateY(40px);opacity:.4}}
+.grab{width:42px;height:5px;border-radius:3px;background:var(--line);margin:0 auto 12px}
+.sheet h2{margin:0 52px 4px 0;font-size:1.4rem}
+.x-close{position:absolute;top:12px;right:12px;width:44px;height:44px;border-radius:50%;border:0;background:var(--soft);color:var(--ink);font-size:1.2rem;font-weight:800}
+.sheet-nav{display:flex;gap:8px;margin-top:18px}
+.sheet-nav .btn{flex:1}
+.set-group{display:flex;flex-direction:column;gap:8px;margin-top:16px}
+.set-group h3{margin:0;font-size:1rem}
+.seg{display:grid;grid-template-columns:repeat(auto-fit,minmax(68px,1fr));background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:3px;gap:2px}
+.seg button{border:0;background:none;padding:8px 10px;border-radius:9px;font-size:.85rem;font-weight:700;color:var(--ink2);min-height:44px}
+.seg button[aria-pressed="true"]{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgb(0 0 0 / .2)}
+.about{display:flex;align-items:center;gap:12px}.about img{border-radius:11px}
+.disclaimer{background:#fff4d1;color:#4a3800;border:1px solid #f0d27a;border-radius:12px;padding:10px 12px;font-size:.88rem;line-height:1.45}
+:root[data-theme="dark"] .disclaimer{background:#3d3208;color:#fff0bf;border-color:#6b5713}
+.sheet a{color:var(--link)}
+.lnk{background:none;border:0;padding:10px 0;min-height:44px;color:var(--link);text-decoration:underline;text-underline-offset:3px;font-weight:700;text-align:left}
+.nov h4{margin:14px 0 4px}
+.nov ul{margin:0;padding-left:20px} .nov li{margin:3px 0}
+.steps{margin:12px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:10px;counter-reset:st}
+.steps li{display:flex;gap:12px;align-items:flex-start;background:var(--soft);border-radius:12px;padding:10px 12px;counter-increment:st}
+.steps li::before{content:counter(st);flex:none;width:26px;height:26px;border-radius:50%;background:var(--acc);color:var(--acc-ink);display:grid;place-items:center;font-weight:800;font-size:.8rem}
+.steps svg{width:20px;height:20px;vertical-align:-4px;stroke:var(--link);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.kbd{display:inline-block;border:1px solid var(--line);background:var(--card);border-radius:6px;padding:0 6px;font-weight:700}
+.hintbox{background:var(--soft);border-radius:12px;padding:10px 12px;font-size:.9rem}
+.howto{margin:8px 0 0;padding-left:20px}.howto li{margin:6px 0}
+#barra-act{position:fixed;left:50%;transform:translateX(-50%);top:calc(10px + env(safe-area-inset-top,0px));z-index:60;background:var(--acc);color:var(--acc-ink);font-weight:800;font-size:.9rem;padding:9px 16px;border-radius:999px;box-shadow:0 6px 20px -8px rgb(0 0 0 / .5)}
+
+/* Pantalla de juego */
+#juego{position:fixed;inset:0;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+#juego canvas{display:block;width:100%;height:100%}
+.hud-btn{position:absolute;z-index:5;width:48px;height:48px;border-radius:50%;border:0;background:rgb(0 0 0 / .35);color:#fff;font-size:1.3rem;font-weight:800;display:grid;place-items:center;backdrop-filter:blur(4px)}
+.over{position:absolute;inset:0;z-index:8;display:flex;align-items:center;justify-content:center;padding:20px;background:rgb(0 0 0 / .45)}
+.over[hidden]{display:none}
+.card{background:var(--card);color:var(--ink);border-radius:24px;padding:22px 20px;width:100%;max-width:380px;text-align:center;box-shadow:0 20px 50px -20px rgb(0 0 0 / .6);animation:pop .25s ease-out}
+@keyframes pop{from{transform:scale(.92);opacity:0}}
+.card h2{margin:0 0 6px;font-size:1.6rem}
+.card .big{font-size:3rem;font-weight:900;margin:6px 0;font-variant-numeric:tabular-nums}
+.card .row{justify-content:center;margin-top:16px}
+.card .btn{min-width:130px}
+[hidden]{display:none!important}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+</style>
+</head>
+<body>
+<main id="app">
+<section id="menu" aria-labelledby="titulo">
+ <div class="m-wrap">
+  <div class="m-top"><button id="gear" class="icon-btn" aria-label="Ajustes"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button></div>
+  <div id="install-slot"></div>
+  <div class="m-hero"><img src="icon-192.png" alt="" width="96" height="96"><h1 id="titulo">Torre de Azulejos</h1><p>Apila azulejos de lacería sin que se te caiga la torre</p></div>
+  <div class="modes">
+   <button class="mode main" id="b-jugar"><span class="em" aria-hidden="true">🧱</span><span><b>Jugar</b><span class="d">Apila todo lo que puedas</span></span></button>
+   <button class="mode" id="b-dia"><span class="em" aria-hidden="true">🏁</span><span><b>Reto del día</b><span class="d" id="dia-d">Llega a la altura de hoy</span></span></button>
+   <button class="mode" id="b-como"><span class="em" aria-hidden="true">❓</span><span><b>Cómo se juega</b><span class="d">Un toque, nada más</span></span></button>
+  </div>
+  <div class="records" id="records"></div>
+
+  <div class="m-foot"><button class="ver" id="foot-ver">Ajustes</button></div>
+ </div>
+</section>
+<section id="juego" hidden aria-label="Partida">
+<canvas id="cv" role="img" aria-label="Torre de azulejos"></canvas>
+<button class="hud-btn" id="b-salir" aria-label="Salir al menú" style="top:calc(10px + env(safe-area-inset-top,0px));left:calc(10px + env(safe-area-inset-left,0px))">✕</button>
+<button class="hud-btn" id="b-pausa" aria-label="Pausa" style="top:calc(10px + env(safe-area-inset-top,0px));right:calc(10px + env(safe-area-inset-right,0px))">II</button>
+<div class="hud" aria-hidden="true"><div id="h-score">0</div><div id="h-sub"></div></div>
+<div class="tap-hint" id="tap-hint">Toca para soltar el azulejo</div>
+<div class="over" id="o-pausa" hidden><div class="card" role="dialog" aria-modal="true" aria-labelledby="p-t"><h2 id="p-t">Pausa</h2><p class="muted" style="margin:0">La torre te espera.</p>
+ <div class="row"><button class="btn" id="b-seguir">Seguir</button><button class="btn ghost" id="b-menu1">Menú</button></div></div></div>
+<div class="over" id="o-fin" hidden><div class="card" role="dialog" aria-modal="true" aria-labelledby="f-t"><h2 id="f-t">¡Se cayó!</h2>
+ <div class="big" id="f-score">0</div><p class="muted" id="f-sub" style="margin:0">pisos</p><p id="f-extra" style="margin:10px 0 0;font-weight:700"></p>
+ <div class="row"><button class="btn" id="b-otra">Otra vez</button><button class="btn ghost" id="b-menu2">Menú</button></div></div></div>
+
+</section>
+</main>
+<div id="sheet" hidden></div>
+<div id="barra-act" hidden>🔄 Actualizando a la versión nueva…</div>
+<div id="sr" class="sr-only" aria-live="polite"></div>
+<script>
+const CFG={"repo": "torre-azulejos", "pre": "ta", "nombre": "Torre de Azulejos", "corto": "Torre de Azulejos", "color": "#14325c", "aviso": "Juego de habilidad para entretenerse. Los azulejos están inspirados en la lacería andalusí, pero son dibujos propios de la app y no reproducen ningún alicatado real.", "soporte": "https://github.com/indalo-apps/torre-azulejos/issues"};
+const NOVEDADES=[["1.0", ["🧱 Primera versión: apila azulejos de lacería con un toque", "✨ «¡Perfecto!» al acertar justo; con 3 seguidos el azulejo vuelve a crecer", "📅 Reto del día: una altura distinta cada día y racha de días cumplidos", "🏆 Récord y mejor racha de perfectos guardados en el móvil", "📲 Se instala en el móvil, funciona sin conexión y se actualiza sola"]]];
+window.APP={};
+/* ===================== PIEZAS COMUNES (indalo-apps) ===================== */
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const store={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},
+  set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const P=CFG.pre;                       // prefijo de las claves guardadas en el móvil
+const VERSION=(document.querySelector('meta[name="app-version"]')||{}).content||"dev";
+const AUTORES="Adela Moreno Vega y Carlos Moreno Otto";
+const APP=window.APP||{};               // ganchos que define cada juego
+function anunciar(t){const r=$('#sr');r.textContent='';setTimeout(()=>{r.textContent=t},30)}
+function verCmp(a,b){const x=String(a).split('.').map(Number),y=String(b).split('.').map(Number);for(let i=0;i<Math.max(x.length,y.length);i++){const d=(x[i]||0)-(y[i]||0);if(d)return d}return 0}
+const REDUCIR=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
+// Márgenes del área segura (isla, barra de inicio) en píxeles, para dibujar en el lienzo
+const _sa=document.createElement('div');_sa.setAttribute('aria-hidden','true');
+_sa.style.cssText='position:fixed;top:0;left:0;width:0;height:0;visibility:hidden;pointer-events:none;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)';
+document.body.appendChild(_sa);
+function safe(l){return parseFloat(getComputedStyle(_sa)['padding'+l[0].toUpperCase()+l.slice(1)])||0}
+
+/* ---------- Preferencias y aspecto ---------- */
+let PREF=Object.assign({fs:'m',theme:'auto',sound:true,vibra:true},store.get(P+'-pref-v1',{}));
+function guardarPref(){store.set(P+'-pref-v1',PREF)}
+function applyLook(){const r=document.documentElement;r.dataset.fs=PREF.fs;
+  const dark=PREF.theme==='dark'||(PREF.theme==='auto'&&matchMedia('(prefers-color-scheme: dark)').matches);
+  r.dataset.theme=dark?'dark':'light';
+  $$('meta[name="theme-color"]').forEach(m=>m.remove());
+  const m=document.createElement('meta');m.name='theme-color';m.content=getComputedStyle(r).getPropertyValue('--bg').trim()||CFG.color;document.head.appendChild(m);
+  if(APP.onLook)APP.onLook();}
+applyLook();matchMedia('(prefers-color-scheme: dark)').addEventListener('change',applyLook);
+
+/* ---------- Sonido y vibración ---------- */
+let AC=null;
+function audio(){if(!PREF.sound)return null;try{if(!AC)AC=new (window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume();}catch(e){AC=null}return AC}
+addEventListener('pointerdown',()=>{if(PREF.sound)audio()},{once:true,capture:true});
+function tono(f,d=.12,tipo='sine',vol=.18,f2=null,delay=0){const a=audio();if(!a)return;const t=a.currentTime+delay;
+  const o=a.createOscillator(),g=a.createGain();o.type=tipo;o.frequency.setValueAtTime(f,t);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+d);
+  g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+.01);g.gain.exponentialRampToValueAtTime(0.0001,t+d);
+  o.connect(g).connect(a.destination);o.start(t);o.stop(t+d+.02);}
+function ruido(d=.2,vol=.25,corte=1200){const a=audio();if(!a)return;const n=Math.floor(a.sampleRate*d),b=a.createBuffer(1,n,a.sampleRate),c=b.getChannelData(0);
+  for(let i=0;i<n;i++)c[i]=(Math.random()*2-1)*Math.pow(1-i/n,2);const s=a.createBufferSource();s.buffer=b;const fl=a.createBiquadFilter();fl.type='lowpass';fl.frequency.value=corte;
+  const g=a.createGain();g.gain.value=vol;s.connect(fl).connect(g).connect(a.destination);s.start();}
+function vibrar(p){if(PREF.vibra&&navigator.vibrate)try{navigator.vibrate(p)}catch(e){}}
+
+/* ---------- Hojas (ventanas que suben desde abajo) ---------- */
+let sheetOpener=null,skipPop=false;
+function openSheet(html,label){const s=$('#sheet');
+  s.innerHTML=`<div class="sheet-bg" data-close="1"><div class="sheet" role="dialog" aria-modal="true" aria-label="${label}"><div class="grab"></div><button class="x-close" data-close="btn" aria-label="Cerrar">✕</button>${html}</div></div>`;
+  s.hidden=false;if(!sheetOpener||!document.body.contains(sheetOpener))sheetOpener=document.activeElement;
+  if(!(history.state&&history.state.sheet))history.pushState({sheet:1,juego:!!(history.state&&history.state.juego)},'');
+  const sh=s.querySelector('.sheet');sh.tabIndex=-1;sh.focus({preventScroll:true});if(APP.onSheet)APP.onSheet(true);}
+function closeSheet(fromPop){const s=$('#sheet');if(s.hidden)return;s.hidden=true;s.innerHTML='';
+  if(sheetOpener&&document.body.contains(sheetOpener))sheetOpener.focus({preventScroll:true});sheetOpener=null;
+  if(!fromPop&&history.state&&history.state.sheet){skipPop=true;history.back()}if(APP.onSheet)APP.onSheet(false);}
+addEventListener('popstate',()=>{if(skipPop){skipPop=false;return}if(!$('#sheet').hidden){closeSheet(true);return}if(APP.enPantallaJuego&&APP.enPantallaJuego())APP.salir(true)});
+addEventListener('keydown',e=>{if($('#sheet').hidden)return;if(e.key==='Escape'){e.preventDefault();closeSheet();return}
+  if(e.key==='Tab'){const f=[...$('#sheet').querySelectorAll('button:not([disabled]),a[href],input')];if(!f.length)return;const a=f[0],z=f[f.length-1];
+    if(e.shiftKey&&(document.activeElement===a||document.activeElement.classList.contains('sheet'))){e.preventDefault();z.focus()}else if(!e.shiftKey&&document.activeElement===z){e.preventDefault();a.focus()}}});
+$('#sheet').addEventListener('click',e=>{if(e.target.dataset.close||e.target.closest('[data-close="btn"]'))closeSheet()});
+(function(){let y0=null,dy=0,el=null;
+  $('#sheet').addEventListener('touchstart',e=>{el=e.target.closest('.sheet');if(!el||el.scrollTop>0){el=null;return}y0=e.touches[0].clientY;dy=0},{passive:true});
+  $('#sheet').addEventListener('touchmove',e=>{if(!el)return;dy=e.touches[0].clientY-y0;if(dy>0){el.classList.add('drag');el.style.transform=`translateY(${dy}px)`}},{passive:true});
+  $('#sheet').addEventListener('touchend',()=>{if(!el)return;el.classList.remove('drag');if(dy>90)closeSheet();else el.style.transform='';el=null});})();
+
+/* ---------- Ajustes ---------- */
+const FS=[['s','Pequeña'],['m','Normal'],['l','Grande'],['xl','Muy grande'],['xxl','Enorme']];
+const THEMES=[['auto','Automático'],['light','Claro'],['dark','Oscuro']];
+const segOnOff=(k,lbl)=>`<div class="seg" role="group" aria-label="${lbl}"><button data-onoff="${k}" data-val="1" aria-pressed="${!!PREF[k]}">Sí</button><button data-onoff="${k}" data-val="0" aria-pressed="${!PREF[k]}">No</button></div>`;
+function openSettings(){
+  openSheet(`<h2>Ajustes</h2>
+    <div class="set-group"><h3>Tamaño de letra</h3>
+      <div class="seg" role="group" aria-label="Tamaño de letra">${FS.map(([k,l])=>`<button data-fsz="${k}" aria-pressed="${PREF.fs===k}">${l}</button>`).join('')}</div></div>
+    <div class="set-group"><h3>Aspecto</h3>
+      <div class="seg" role="group" aria-label="Aspecto">${THEMES.map(([k,l])=>`<button data-theme-set="${k}" aria-pressed="${PREF.theme===k}">${l}</button>`).join('')}</div>
+      <p class="muted" style="margin:0;font-size:.82rem">«Automático» sigue el modo claro u oscuro del móvil.</p></div>
+    <div class="set-group"><h3>Sonidos</h3>${segOnOff('sound','Sonidos')}</div>
+    <div class="set-group"><h3>Vibración</h3>${segOnOff('vibra','Vibración')}
+      <p class="muted" style="margin:0;font-size:.82rem">El iPhone no deja vibrar a las apps web; en Android sí.</p></div>
+    <div class="set-group"><h3>Instalar en el móvil</h3>
+      ${isStandalone()?`<p class="muted" style="margin:0">✓ Ya la estás usando como app instalada.</p>`:`<button class="btn ghost" id="set-install" style="align-self:flex-start">📲 Cómo añadirla a la pantalla de inicio</button>`}</div>
+    <div class="set-group"><h3>Acerca de</h3>
+      <div class="about"><img src="icon-192.png" alt="" width="48" height="48"><div><b>${CFG.nombre}</b><br><span class="muted">Versión ${VERSION}</span></div></div>
+      <p style="margin:0">Creada por <b>Adela Moreno Vega</b> y <b>Carlos Moreno Otto</b>.</p>
+      <p class="muted" style="margin:0;font-size:.82rem">© ${new Date().getFullYear()} ${AUTORES}. Todos los derechos reservados. Uso personal gratuito.</p>
+      <a class="lnk" href="${CFG.soporte}" target="_blank" rel="noopener">✉️ Contacto y sugerencias</a>
+      <button class="lnk" id="set-priv">🔒 Privacidad</button></div>
+    <div class="set-group"><h3>Aviso</h3><div class="disclaimer">${CFG.aviso}</div></div>
+    <div class="set-group"><h3>Versión</h3>
+      <p style="margin:0">${CFG.corto} · <b>versión ${VERSION}</b> · Se actualiza sola cuando hay una versión nueva.</p>
+      <div class="row"><button class="btn ghost" id="set-upd">🔄 Buscar actualizaciones</button><button class="btn ghost" id="set-nov">Ver novedades</button></div>
+      <p class="muted" id="upd-msg" role="status" style="margin:0;font-size:.82rem">La app lo comprueba sola cada vez que la abres o vuelves a ella.</p></div>
+    <div class="sheet-nav"><button class="btn block" data-close="btn">Cerrar</button></div>`,'Ajustes');
+}
+function openPrivacy(){
+  openSheet(`<h2>Privacidad</h2>
+    <p>${CFG.corto} <b>no recoge ningún dato personal</b>. No hay cuentas, ni anuncios, ni compras, ni estadísticas de uso, ni rastreo.</p>
+    <p>Tus récords y ajustes se guardan <b>solo en tu móvil</b> (en el almacenamiento del navegador) y no se envían a nadie. Si borras los datos del navegador o desinstalas la app, se borran también.</p>
+    <p class="muted" style="font-size:.88rem">La app se descarga de GitHub Pages (GitHub, Inc.), que como cualquier servidor web recibe la dirección IP al abrirla. Después funciona sin conexión.</p>
+    <div class="sheet-nav"><button class="btn block" id="priv-back">Volver a Ajustes</button></div>`,'Privacidad');
+}
+$('#sheet').addEventListener('click',e=>{const t=e.target;let b;
+  if(b=t.closest('[data-fsz]')){PREF.fs=b.dataset.fsz;guardarPref();applyLook();$$('[data-fsz]').forEach(x=>x.setAttribute('aria-pressed',x===b));return}
+  if(b=t.closest('[data-theme-set]')){PREF.theme=b.dataset.themeSet;guardarPref();applyLook();$$('[data-theme-set]').forEach(x=>x.setAttribute('aria-pressed',x===b));return}
+  if(b=t.closest('[data-onoff]')){const k=b.dataset.onoff;PREF[k]=b.dataset.val==='1';guardarPref();$$(`[data-onoff="${k}"]`).forEach(x=>x.setAttribute('aria-pressed',x===b));
+    if(k==='sound'&&PREF.sound)tono(660,.12);if(k==='vibra')vibrar(30);return}
+  if(b=t.closest('#set-upd')){const m=$('#upd-msg');b.disabled=true;m.textContent='Comprobando…';
+    buscarVersion(true).then(v=>{b.disabled=false;
+      if(!EN_WEB)m.textContent='Solo se puede comprobar en la app publicada.';
+      else if(v==null)m.textContent='No se ha podido comprobar. ¿Tienes conexión a internet?';
+      else if(verCmp(v,VERSION)>0)m.textContent=`Hay una versión nueva (${v}). Se instalará al cerrar esta ventana.`;
+      else m.textContent=`✓ Tienes la última versión (${VERSION}).`});return}
+  if(t.closest('#set-nov')){verNovedades(null);return}
+  if(t.closest('#set-priv')){openPrivacy();return}
+  if(t.closest('#priv-back')){openSettings();return}
+  if(t.closest('#set-install')){openInstall();return}
+  if(t.closest('#inst-now')){installNow();return}
+  if(b=t.closest('#inst-copy')){const u=location.origin+location.pathname;(navigator.clipboard?navigator.clipboard.writeText(u):Promise.reject()).then(()=>{b.textContent='✓ Enlace copiado'}).catch(()=>{b.textContent=u});return}
+  if(APP.onSheetClick)APP.onSheetClick(t);
+});
+
+/* ---------- Instalar en la pantalla de inicio ---------- */
+const UA=navigator.userAgent;
+const IS_IOS=/iPhone|iPad|iPod/.test(UA)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+const IS_ANDROID=/Android/.test(UA);
+const IN_APP=/FBAN|FBAV|Instagram|WhatsApp|Line\/|; wv\)|GSA\//.test(UA);
+const IOS_OTHER=IS_IOS&&/CriOS|FxiOS|EdgiOS/.test(UA);
+const IS_IPAD=/iPad/.test(UA)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+let deferredPrompt=null;
+function iosVersion(){const sv=UA.match(/Version\/(\d+)(?:\.(\d+))?.*Safari/);if(sv&&!IOS_OTHER)return [+sv[1],+(sv[2]||0)];const os=UA.match(/OS (\d+)_(\d+)/);return os?[+os[1],+os[2]]:[0,0]}
+function isStandalone(){return matchMedia('(display-mode: standalone)').matches||navigator.standalone===true}
+function renderInstallBanner(){const slot=$('#install-slot');if(!slot)return;
+  if(isStandalone()||store.get(P+'-install-hide',0)||(!IS_IOS&&!IS_ANDROID&&!deferredPrompt)){slot.innerHTML='';return}
+  slot.innerHTML=`<div class="install-banner"><img src="icon-192.png" alt=""><div><b>📲 Instálala en tu móvil</b><span>Tenla en la pantalla de inicio, como una app.</span></div>
+    <button class="btn" id="ib-how">${deferredPrompt?'Instalar':'Ver cómo'}</button><button class="x" id="ib-x" aria-label="No mostrar más">×</button></div>`;}
+$('#install-slot').addEventListener('click',e=>{if(e.target.closest('#ib-how'))openInstall();if(e.target.closest('#ib-x')){store.set(P+'-install-hide',1);renderInstallBanner()}});
+addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;renderInstallBanner()});
+addEventListener('appinstalled',()=>{deferredPrompt=null;store.set(P+'-install-hide',1);closeSheet();renderInstallBanner()});
+async function installNow(){if(!deferredPrompt)return;deferredPrompt.prompt();try{await deferredPrompt.userChoice}catch(e){}deferredPrompt=null;renderInstallBanner()}
+const SHARE_SVG='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M8 7l4-4 4 4"/><path d="M6 11H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1"/></svg>';
+const DOTS_SVG='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>';
+const HDOTS_SVG='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg>';
+const PLUS_SVG='<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M12 8v8M8 12h8"/></svg>';
+function openInstall(){
+  if(deferredPrompt&&!IS_IOS){installNow();return}
+  let body;
+  if(IN_APP){
+    body=`<p style="margin:12px 0 0">Has abierto el enlace dentro de otra app. Para instalarla, ábrela primero en el navegador:</p>
+      <ol class="steps"><li><span>Toca el menú ${DOTS_SVG} o el botón ${SHARE_SVG} de esta pantalla.</span></li>
+      <li><span>Elige <b>«Abrir en ${IS_IOS?'Safari':'Chrome'}»</b> (o «Abrir en el navegador»).</span></li>
+      <li><span>Allí, vuelve a tocar <b>⚙️ → Cómo añadirla a la pantalla de inicio</b>.</span></li></ol>`;
+  }else if(IS_IOS){
+    const [maj,min]=iosVersion(),dev=IS_IPAD?'iPad':'iPhone';
+    const ver=maj?`<p class="hintbox" style="margin:12px 0 0">Tu ${dev} tiene <b>iOS ${maj}${min?'.'+min:''}</b>. Estos son los pasos para esa versión.</p>`:'';
+    const end=`<li><span>Si aparece <b>«Abrir como app web»</b>, déjalo activado y pulsa <span class="kbd">Añadir</span> (arriba a la derecha).</span></li>
+      <li><span>Listo: el icono <b>${CFG.corto}</b> aparecerá en tu pantalla de inicio. Ábrela siempre desde ahí.</span></li>`;
+    if(maj&&(maj<16||(maj===16&&min<4))&&IOS_OTHER){
+      body=ver+`<p style="margin:12px 0 0">En esta versión de iOS solo se puede instalar desde <b>Safari</b>:</p>
+        <ol class="steps"><li><span>Copia el enlace y ábrelo en <b>Safari</b>. <button class="btn ghost" id="inst-copy" style="margin-top:6px;padding:8px 12px;font-size:.85rem">Copiar enlace</button></span></li>
+        <li><span>Toca el botón <b>Compartir</b> ${SHARE_SVG} de la barra de abajo.</span></li>
+        <li><span>Elige <b>«Añadir a pantalla de inicio»</b> ${PLUS_SVG}.</span></li>${end}</ol>`;
+    }else if(IOS_OTHER){
+      body=ver+`<p style="margin:12px 0 0">Desde este navegador (o desde Safari):</p>
+        <ol class="steps"><li><span>Toca el botón <b>Compartir</b> ${SHARE_SVG}, en la barra de direcciones o en el menú del navegador.</span></li>
+        <li><span>Elige <b>«Añadir a pantalla de inicio»</b> ${PLUS_SVG}. Si no está, toca <b>«Más»</b> o baja en la lista.</span></li>${end}</ol>`;
+    }else if(maj>=26){
+      body=ver+`<ol class="steps">
+        <li><span>Toca el botón <b>···</b> ${HDOTS_SVG} que está a la derecha de la barra de la dirección${IS_IPAD?' (arriba)':' (abajo)'}.</span></li>
+        <li><span>Toca <b>«Compartir»</b> ${SHARE_SVG}.</span></li>
+        <li><span>Toca <b>«Ver más»</b> si hace falta, baja en la lista y elige <b>«Añadir a pantalla de inicio»</b> ${PLUS_SVG}.</span></li>${end}</ol>`;
+    }else{
+      body=ver+`<ol class="steps">
+        <li><span>Toca el botón <b>Compartir</b> ${SHARE_SVG}${IS_IPAD?', arriba a la derecha.':', en el centro de la barra de abajo. Si no ves la barra, desliza un poco la página hacia arriba.'}</span></li>
+        <li><span>Baja en la lista y elige <b>«Añadir a pantalla de inicio»</b> ${PLUS_SVG}.</span></li>${end}</ol>`;
+    }
+  }else if(IS_ANDROID){
+    body=`<p style="margin:12px 0 0">En el móvil Android, con Chrome:</p>
+      <ol class="steps"><li><span>Toca el menú ${DOTS_SVG} (arriba a la derecha).</span></li>
+      <li><span>Elige <b>«Añadir a pantalla de inicio»</b> o <b>«Instalar aplicación»</b>.</span></li>
+      <li><span>Pulsa <span class="kbd">Instalar</span>. El icono aparecerá en tu pantalla de inicio.</span></li></ol>`;
+  }else{
+    body=`<p style="margin:12px 0 0">Está pensada sobre todo para el móvil: abre este mismo enlace en el teléfono y sigue los pasos que salen allí.</p>
+      <ol class="steps"><li><span>En el ordenador también se puede instalar con Chrome o Edge: busca el icono de instalar ${PLUS_SVG} a la derecha de la barra de direcciones.</span></li></ol>`;
+  }
+  openSheet(`<div class="about"><img src="icon-192.png" alt="" width="56" height="56"><div><h2 style="margin:0">Instalar la app</h2><span class="muted" style="font-size:.82rem">Gratis, sin tienda y sin registrarse</span></div></div>
+    ${body}
+    <p class="muted" style="font-size:.82rem;margin:12px 0 0">Una vez instalada se abre a pantalla completa, funciona sin conexión y se actualiza sola.</p>
+    <div class="sheet-nav">${deferredPrompt?`<button class="btn" id="inst-now">Instalar ahora</button>`:''}<button class="btn ${deferredPrompt?'ghost':'block'}" data-close="btn">Entendido</button></div>`,'Instalar en el móvil');
+}
+
+/* ---------- Actualización automática ---------- */
+function verNovedades(desde){
+  const todas=NOVEDADES.filter(([v])=>!desde||verCmp(v,desde)>0);if(!todas.length)return;
+  openSheet(`<h2>${desde?'¡La app se ha actualizado!':'Novedades'}</h2>
+    <div class="nov">${todas.slice(0,4).map(([v,items])=>`<h4>Versión ${v}</h4><ul>${items.map(i=>`<li>${i}</li>`).join('')}</ul>`).join('')}</div>
+    <div class="sheet-nav"><button class="btn block" data-close="btn">Entendido</button></div>`,'Novedades');
+}
+const EN_WEB=/\.github\.io$/.test(location.hostname)||location.hostname==='localhost';
+let actPendiente=false;
+// Nunca se recarga con una ventana abierta ni con una partida empezada
+function seguroRecargar(){if(!$('#sheet').hidden)return false;if(APP.enPartida&&APP.enPartida())return false;return true}
+function actualizar(){if(!seguroRecargar()){actPendiente=true;return}
+  $('#barra-act').hidden=false;setTimeout(()=>location.replace(location.pathname+'?u='+Date.now()),900);}
+let lastCheck=0;
+async function buscarVersion(force){
+  if(!EN_WEB)return null;if(!force&&Date.now()-lastCheck<4000)return null;lastCheck=Date.now();
+  try{const txt=await (await fetch(location.pathname+'?v='+Date.now(),{cache:'no-store'})).text();
+    const m=txt.match(/name="app-version" content="([^"]+)"/);
+    if(m&&verCmp(m[1],VERSION)>0){actualizar();return m[1]}return VERSION;}catch(e){return null}}
+function revisarPendiente(){if(actPendiente&&seguroRecargar()){actPendiente=false;actualizar()}}
+new MutationObserver(revisarPendiente).observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['hidden','class']});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')buscarVersion()});
+setInterval(buscarVersion,90*1000);addEventListener('focus',()=>buscarVersion());addEventListener('pageshow',()=>buscarVersion());
+
+/* ---------- Arranque común ---------- */
+function arrancarComun(){
+  $('#gear').addEventListener('click',openSettings);
+  $('#foot-ver').textContent=`Ajustes · Versión ${VERSION} · Novedades`;
+  $('#foot-ver').addEventListener('click',openSettings);
+  renderInstallBanner();
+  if(/[?&]instalar\b/.test(location.search)&&!isStandalone()){history.replaceState(null,'',location.pathname);setTimeout(openInstall,400)}
+  if(/[?&]u=/.test(location.search))history.replaceState(history.state,'',location.pathname);
+  const vista=store.get(P+'-version',null);store.set(P+'-version',VERSION);
+  if(vista&&verCmp(VERSION,vista)>0)setTimeout(()=>verNovedades(vista),600);
+  buscarVersion();
+  if(EN_WEB&&'serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').then(r=>r.update()).catch(()=>{}));
+}
+
+/* ===================== JUEGO ===================== */
+/* Torre de Azulejos: apila azulejos con un toque */
+const cv=$('#cv'),ctx=cv.getContext('2d');
+let W=0,H=0,DPR=1,BH=36,W0=240,TILE={};
+// Paletas de azulejo: fondo, estrella, centro
+const PAL=[['#1f4e9c','#f2ead8','#c98a1b'],['#f2ead8','#2e7d4f','#1f2a44'],['#c98a1b','#1f2a44','#f2ead8'],
+           ['#2e7d4f','#f2ead8','#a23b2a'],['#1f2a44','#c98a1b','#f2ead8'],['#a23b2a','#f2ead8','#1f4e9c']];
+const NOTAS=[523.25,587.33,659.25,783.99,880,1046.5,1174.66,1318.5,1567.98,1760];
+
+function hoyStr(d=new Date()){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function hashStr(s){let h=2166136261;for(const c of s){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return h>>>0}
+function metaHoy(){return 18+hashStr('torre'+hoyStr())%23}
+function ayerStr(){const d=new Date();d.setDate(d.getDate()-1);return hoyStr(d)}
+
+/* ---------- Dibujo de un azulejo (se prepara una vez por tamaño) ---------- */
+function hacerAzulejo(p){const s=Math.round(BH*DPR),c=document.createElement('canvas');c.width=c.height=s;const g=c.getContext('2d');
+  const [bg,st,ce]=PAL[p];g.fillStyle=bg;g.fillRect(0,0,s,s);
+  const m=s/2,r=s*.40;
+  // Estrella de ocho puntas: dos cuadrados girados
+  g.fillStyle=st;g.beginPath();for(const a0 of [0,Math.PI/4]){for(let k=0;k<4;k++){const a=a0+k*Math.PI/2;const x=m+r*Math.cos(a),y=m+r*Math.sin(a);k?g.lineTo(x,y):g.moveTo(x,y)}g.closePath()}g.fill('nonzero');
+  // Lazo interior (octógono hueco) y centro
+  g.strokeStyle=bg;g.lineWidth=s*.06;g.beginPath();for(let k=0;k<8;k++){const a=k*Math.PI/4+Math.PI/8,x=m+r*.62*Math.cos(a),y=m+r*.62*Math.sin(a);k?g.lineTo(x,y):g.moveTo(x,y)}g.closePath();g.stroke();
+  g.fillStyle=ce;g.beginPath();g.arc(m,m,s*.1,0,Math.PI*2);g.fill();
+  // Puntas de las esquinas (se unen con los azulejos vecinos)
+  g.fillStyle=ce;for(const [x,y] of [[0,0],[s,0],[0,s],[s,s]]){g.beginPath();g.moveTo(x,y-s*.16);g.lineTo(x+s*.16,y);g.lineTo(x,y+s*.16);g.lineTo(x-s*.16,y);g.closePath();g.fill()}
+  // Llaga (junta) entre azulejos
+  g.strokeStyle='rgba(0,0,0,.28)';g.lineWidth=Math.max(1,s*.025);g.strokeRect(0,0,s,s);
+  return c;}
+
+function medir(){DPR=Math.min(window.devicePixelRatio||1,3);W=innerWidth;H=innerHeight;cv.width=Math.round(W*DPR);cv.height=Math.round(H*DPR);
+  const nbh=Math.round(Math.max(28,Math.min(46,H*.055)));
+  if(nbh!==BH||!TILE[0]||TILE.dpr!==DPR){BH=nbh;TILE={dpr:DPR};for(let p=0;p<PAL.length;p++)TILE[p]=hacerAzulejo(p)}
+  W0=Math.round(Math.min(W*.62,330));}
+addEventListener('resize',()=>{if(!$('#juego').hidden){medir();dibujar()}});
+
+/* ---------- Estado ---------- */
+let S=null,raf=0,tPrev=0;
+const est={get best(){return store.get(P+'-best',0)},set best(v){store.set(P+'-best',v)},
+  get combo(){return store.get(P+'-combo',0)},set combo(v){store.set(P+'-combo',v)}};
+function diaInfo(){const d=store.get(P+'-dia',{});if(d.ult&&d.ult!==hoyStr()&&d.ult!==ayerStr())d.racha=0;return d}
+
+function nueva(modo){medir();
+  const pal0=modo==='dia'?hashStr(hoyStr())%PAL.length:Math.floor(Math.random()*PAL.length);
+  S={modo,estado:'juego',pila:[{x:(W-W0)/2,w:W0,p:pal0}],mov:null,cam:0,caidas:[],fx:[],textos:[],combo:0,maxCombo:0,
+     pal0,meta:modo==='dia'?metaHoy():0,metaOk:false,lado:Math.random()<.5?1:-1,empezado:false,temblor:0};
+  nuevoMovil();$('#tap-hint').hidden=false;actHud();}
+function nuevoMovil(){const top=S.pila[S.pila.length-1],n=S.pila.length;S.lado*=-1;
+  const izq=W*.06-top.w/2,der=W*.94-top.w/2;
+  S.mov={x:S.lado>0?izq:der,w:top.w,p:(S.pal0+n)%PAL.length,dir:S.lado,izq,der};}
+function velocidad(){const n=S.pila.length;return W*Math.min(1.35,.5+.022*n)}
+const pisos=()=>S.pila.length-1;
+
+function soltar(){if(!S||S.estado!=='juego')return;
+  if(!S.empezado){S.empezado=true;$('#tap-hint').hidden=true}
+  const m=S.mov,top=S.pila[S.pila.length-1],n=S.pila.length;
+  const izq=Math.max(m.x,top.x),der=Math.min(m.x+m.w,top.x+top.w),sol=der-izq;
+  if(sol<=0){// Fuera: el azulejo cae entero
+    S.caidas.push({x:m.x,y:-(n+1)*BH,w:m.w,p:m.p,vx:m.dir*60,vy:0,rot:0,vr:m.dir*2});S.mov=null;fin();return}
+  const tol=Math.max(4,BH*.14);
+  if(Math.abs(m.x-top.x)<=tol){// ¡Perfecto!
+    S.combo++;S.maxCombo=Math.max(S.maxCombo,S.combo);let x=top.x,w=top.w;
+    if(S.combo>=3&&w<W0){const g=Math.min(BH*.5,W0-w);x-=g/2;w+=g;x=Math.max(2,Math.min(W-w-2,x))}
+    S.pila.push({x,w,p:m.p});S.fx.push({x,w,y:-(n+1)*BH,t:0});
+    S.textos.push({txt:S.combo>1?`¡Perfecto! ×${S.combo}`:'¡Perfecto!',x:x+w/2,y:-(n+1)*BH,t:0});
+    tono(NOTAS[Math.min(S.combo-1,NOTAS.length-1)],.22,'triangle',.22);if(S.combo>=3)tono(NOTAS[Math.min(S.combo+1,NOTAS.length-1)],.25,'sine',.12,null,.06);
+    vibrar(12);
+  }else{// Se corta lo que sobresale
+    S.combo=0;S.pila.push({x:izq,w:sol,p:m.p});
+    const cx=m.x<top.x?m.x:der,cw=m.w-sol,dir=m.x<top.x?-1:1;
+    S.caidas.push({x:cx,y:-(n+1)*BH,w:cw,p:m.p,vx:dir*90,vy:-60,rot:0,vr:dir*(2+Math.random()*2)});
+    tono(170,.12,'triangle',.25);ruido(.12,.12,900);vibrar(8);
+  }
+  if(S.modo==='dia'&&!S.metaOk&&pisos()>=S.meta)metaCumplida();
+  if(pisos()%10===0)anunciar(`${pisos()} pisos`);
+  nuevoMovil();actHud();}
+
+function metaCumplida(){S.metaOk=true;const d=diaInfo(),h=hoyStr();
+  if(d.ult!==h){d.racha=(d.ult===ayerStr()?(d.racha||0):0)+1;d.ult=h;store.set(P+'-dia',d)}
+  S.textos.push({txt:'🏁 ¡Reto del día cumplido!',x:W/2,y:-(S.pila.length)*BH-BH*1.5,t:0,big:1});
+  [0,.1,.2,.3].forEach((dl,i)=>tono(NOTAS[i*2],.3,'triangle',.2,null,dl));vibrar([20,40,20]);anunciar('Reto del día cumplido');}
+
+function fin(){S.estado='cayendo';S.temblor=REDUCIR()?0:10;tono(330,.5,'sawtooth',.12,90);vibrar(60);
+  setTimeout(()=>{if(!S)return;S.estado='fin';const p=pisos(),rec=p>est.best;if(rec)est.best=p;if(S.maxCombo>est.combo)est.combo=S.maxCombo;
+    $('#f-t').textContent=rec&&p>0?'🏆 ¡Nuevo récord!':'¡Se cayó!';$('#f-score').textContent=p;$('#f-sub').textContent=p===1?'piso':'pisos';
+    let ex=`Récord: ${est.best} · Mejor racha: ${est.combo} perfectos`;
+    if(S.modo==='dia')ex=S.metaOk?`✓ Reto del día cumplido (${S.meta} pisos) · Racha: ${diaInfo().racha||1} ${diaInfo().racha===1?'día':'días'}`:`Meta de hoy: ${S.meta} pisos. ¡Te faltaron ${S.meta-p}!`;
+    $('#f-extra').textContent=ex;$('#o-fin').hidden=false;$('#b-otra').focus();
+    anunciar(`Fin de la partida. ${p} pisos. ${ex}`);if(rec&&p>0)[0,.12,.24].forEach((dl,i)=>tono(NOTAS[4+i],.3,'triangle',.2,null,dl));},800);}
+
+function actHud(){$('#h-score').textContent=pisos();
+  let sub='';if(S.modo==='dia')sub=S.metaOk?'✓ Reto cumplido':`Meta de hoy: ${S.meta}`;
+  if(S.combo>=2)sub=(sub?sub+' · ':'')+`Racha ×${S.combo}`;$('#h-sub').textContent=sub;
+  cv.setAttribute('aria-label',`Torre de ${pisos()} pisos`);}
+
+/* ---------- Bucle ---------- */
+function paso(t){raf=requestAnimationFrame(paso);const dt=Math.min(.05,(t-(tPrev||t))/1000);tPrev=t;
+  if(!S||S.estado==='pausa')return;
+  if(S.estado==='juego'&&S.mov){const m=S.mov;m.x+=m.dir*velocidad()*dt;
+    if(m.x>m.der){m.x=m.der;m.dir=-1}if(m.x<m.izq){m.x=m.izq;m.dir=1}}
+  const objetivo=Math.max(0,(S.pila.length+1)*BH-H*.52);S.cam+=(objetivo-S.cam)*Math.min(1,dt*6);
+  for(const c of S.caidas){c.vy+=2200*dt;c.x+=c.vx*dt;c.y+=c.vy*dt;c.rot+=c.vr*dt}
+  S.caidas=S.caidas.filter(c=>c.y+S.cam<H+200);
+  S.fx.forEach(f=>f.t+=dt);S.fx=S.fx.filter(f=>f.t<.5);S.textos.forEach(f=>f.t+=dt);S.textos=S.textos.filter(f=>f.t<(f.big?2.2:1));
+  if(S.temblor>0)S.temblor=Math.max(0,S.temblor-dt*30);
+  dibujar();}
+
+function mezcla(a,b,k){const pa=a.match(/\w\w/g).map(h=>parseInt(h,16)),pb=b.match(/\w\w/g).map(h=>parseInt(h,16));
+  return '#'+pa.map((v,i)=>Math.round(v+(pb[i]-v)*k).toString(16).padStart(2,'0')).join('')}
+const CIELO=[[0,'87b9e8','f7e6c6'],[22,'4b4f8f','f09a63'],[45,'101a3d','4a2f62'],[75,'03050f','101a3d']];
+function cielo(n){for(let i=CIELO.length-1;i>=0;i--)if(n>=CIELO[i][0]){const a=CIELO[i],b=CIELO[i+1]||a;const k=b===a?0:(n-a[0])/(b[0]-a[0]);return [mezcla(a[1],b[1],k),mezcla(a[2],b[2],k)]}}
+const ESTRELLAS=Array.from({length:70},()=>[Math.random(),Math.random(),Math.random()*1.4+.4]);
+
+function dibujar(){if(!S)return;ctx.setTransform(DPR,0,0,DPR,0,0);
+  const n=S.cam/BH,[c1,c2]=cielo(n);const gr=ctx.createLinearGradient(0,0,0,H);gr.addColorStop(0,'#'+c1.slice(1));gr.addColorStop(1,'#'+c2.slice(1));
+  ctx.fillStyle=gr;ctx.fillRect(0,0,W,H);
+  if(n>30){ctx.fillStyle='#fff';const a=Math.min(1,(n-30)/25);for(const [x,y,r] of ESTRELLAS){ctx.globalAlpha=a*(.4+.6*((y*997+performance.now()/900)%1>.5?1:.6));ctx.beginPath();ctx.arc(x*W,((y*H*1.6+S.cam*.15)%(H*1.2)),r,0,7);ctx.fill()}ctx.globalAlpha=1}
+  const sx=S.temblor?(Math.random()-.5)*S.temblor:0;ctx.save();ctx.translate(sx,0);
+  const g0=H-Math.max(70,H*.12);const Y=wy=>g0+wy+S.cam;
+  // Arquería al fondo (parallax)
+  const ya=g0+S.cam*.35;if(ya-H*.32<H){ctx.fillStyle='rgba(255,255,255,.10)';const aw=W/5;
+    ctx.beginPath();ctx.rect(0,ya-H*.32,W,H*.32+H);for(let i=0;i<6;i++){const cx=i*aw+aw/2-aw*.5+aw*.5;const r=aw*.32;ctx.moveTo(cx-r,ya+H);ctx.lineTo(cx-r,ya-H*.16);ctx.arc(cx,ya-H*.16,r,Math.PI,0);ctx.lineTo(cx+r,ya+H)}ctx.fill('evenodd')}
+  // Basamento de mármol
+  const yb=Y(0);if(yb<H){const gm=ctx.createLinearGradient(0,yb,0,H);gm.addColorStop(0,'#efe9df');gm.addColorStop(1,'#cfc6b8');ctx.fillStyle=gm;ctx.fillRect(0,yb,W,H-yb+S.cam+10);
+    ctx.fillStyle='rgba(0,0,0,.12)';ctx.fillRect(0,yb,W,3)}
+  // Línea de la meta del día
+  if(S.modo==='dia'){const ym=Y(-(S.meta+1)*BH);if(ym>-20&&ym<H+20){ctx.save();ctx.setLineDash([10,8]);ctx.strokeStyle=S.metaOk?'#5fd38a':'#ffd34d';ctx.lineWidth=3;
+    ctx.beginPath();ctx.moveTo(0,ym);ctx.lineTo(W,ym);ctx.stroke();ctx.restore();ctx.fillStyle=S.metaOk?'#5fd38a':'#ffd34d';ctx.font='800 14px system-ui,sans-serif';ctx.textAlign='left';
+    ctx.fillText(S.metaOk?'✓ Meta de hoy':`🏁 Meta de hoy: ${S.meta}`,12,ym-8)}}
+  // Torre
+  for(let i=0;i<S.pila.length;i++){const b=S.pila[i],y=Y(-(i+1)*BH);if(y>H||y<-BH)continue;bloque(b.x,y,b.w,b.p,i===0)}
+  if(S.mov&&S.estado==='juego'){const n2=S.pila.length;bloque(S.mov.x,Y(-(n2+1)*BH),S.mov.w,S.mov.p)}
+  for(const c of S.caidas){ctx.save();ctx.translate(c.x+c.w/2,Y(c.y)+BH/2);ctx.rotate(c.rot);bloque(-c.w/2,-BH/2,c.w,c.p);ctx.restore()}
+  for(const f of S.fx){const k=f.t/.5,e=BH*.6*k;ctx.strokeStyle=`rgba(255,255,255,${1-k})`;ctx.lineWidth=3;ctx.strokeRect(f.x-e,Y(f.y)-e,f.w+2*e,BH+2*e)}
+  ctx.textAlign='center';for(const f of S.textos){const k=f.t/(f.big?2.2:1);ctx.globalAlpha=1-k*k;ctx.font=`900 ${f.big?22:18}px system-ui,sans-serif`;
+    ctx.fillStyle='#fff';ctx.strokeStyle='rgba(0,0,0,.45)';ctx.lineWidth=4;const y=Y(f.y)-14-k*40;ctx.strokeText(f.txt,Math.max(90,Math.min(W-90,f.x)),y);ctx.fillText(f.txt,Math.max(90,Math.min(W-90,f.x)),y)}
+  ctx.globalAlpha=1;ctx.restore();}
+
+function bloque(x,y,w,p,base){if(w<=0)return;ctx.save();ctx.beginPath();ctx.rect(x,y,w,BH);ctx.clip();
+  const t=TILE[p];if(base){ctx.fillStyle='#efe9df';ctx.fillRect(x,y,w,BH);ctx.fillStyle='#b9ad99';ctx.fillRect(x,y+BH-4,w,4)}
+  else for(let k=Math.floor(x/BH);k*BH<x+w;k++)ctx.drawImage(t,k*BH,y,BH,BH);
+  ctx.restore();ctx.fillStyle='rgba(255,255,255,.35)';ctx.fillRect(x,y,w,2);ctx.fillStyle='rgba(0,0,0,.28)';ctx.fillRect(x,y+BH-2,w,2);
+  ctx.strokeStyle='rgba(0,0,0,.35)';ctx.lineWidth=1;ctx.strokeRect(x+.5,y+.5,w-1,BH-1);}
+
+/* ---------- Pantallas ---------- */
+function abrir(modo){$('#menu').hidden=true;$('#juego').hidden=false;$('#o-fin').hidden=true;$('#o-pausa').hidden=true;
+  history.pushState({juego:1},'');nueva(modo);tPrev=0;cancelAnimationFrame(raf);raf=requestAnimationFrame(paso);$('#juego').focus?.();}
+function salir(fromPop){cancelAnimationFrame(raf);S=null;$('#juego').hidden=true;$('#menu').hidden=false;pintarMenu();
+  if(!fromPop&&history.state&&history.state.juego){skipPop=true;history.back()}$('#b-jugar').focus();}
+function pausa(){if(S&&S.estado==='juego'){S.estado='pausa';$('#o-pausa').hidden=false;$('#b-seguir').focus()}}
+function seguir(){if(S&&S.estado==='pausa'){S.estado='juego';$('#o-pausa').hidden=true;tPrev=0}}
+APP.enPantallaJuego=()=>!$('#juego').hidden;
+APP.enPartida=()=>!!S&&(S.estado==='juego'||S.estado==='pausa'||S.estado==='cayendo')&&S.empezado;
+APP.salir=salir;
+APP.onSheet=abierta=>{if(abierta)pausa()};
+
+$('#juego').addEventListener('pointerdown',e=>{if(e.target.closest('button,.over'))return;e.preventDefault();soltar()});
+addEventListener('keydown',e=>{if($('#juego').hidden||!$('#sheet').hidden)return;
+  if((e.key===' '||e.key==='Enter')&&S&&S.estado==='juego'&&!e.target.closest('button')){e.preventDefault();if(!e.repeat)soltar()}
+  else if(e.key==='Escape'){e.preventDefault();if(S&&S.estado==='pausa')seguir();else if(S&&S.estado==='juego')pausa();else salir()}
+  else if((e.key==='p'||e.key==='P')&&S&&S.estado==='juego')pausa();});
+document.addEventListener('visibilitychange',()=>{if(document.hidden)pausa()});
+$('#b-salir').addEventListener('click',()=>salir());$('#b-pausa').addEventListener('click',pausa);$('#b-seguir').addEventListener('click',seguir);
+$('#b-menu1').addEventListener('click',()=>salir());$('#b-menu2').addEventListener('click',()=>salir());
+$('#b-otra').addEventListener('click',()=>{$('#o-fin').hidden=true;nueva(S?S.modo:'libre')});
+$('#b-jugar').addEventListener('click',()=>abrir('libre'));$('#b-dia').addEventListener('click',()=>abrir('dia'));
+$('#b-como').addEventListener('click',()=>openSheet(`<h2>Cómo se juega</h2>
+  <ol class="howto"><li>Un azulejo va y viene por encima de la torre. <b>Toca la pantalla</b> (o pulsa la barra espaciadora) para soltarlo.</li>
+  <li>Lo que sobresale <b>se corta y cae</b>: el siguiente azulejo será igual de estrecho.</li>
+  <li>Si lo sueltas <b>justo encima</b>, ganas un «¡Perfecto!» y no pierdes nada. Con <b>3 perfectos seguidos</b>, el azulejo vuelve a crecer.</li>
+  <li>Cada piso va un poco más rápido. Si fallas del todo, la partida se acaba.</li>
+  <li>En el <b>Reto del día</b> hay una altura que alcanzar, la misma para todos ese día. Cúmplela varios días seguidos para hacer racha.</li></ol>
+  <div class="sheet-nav"><button class="btn block" data-close="btn">¡A jugar!</button></div>`,'Cómo se juega'));
+
+function pintarMenu(){const d=diaInfo(),hecho=d.ult===hoyStr();
+  $('#dia-d').textContent=hecho?`✓ Hecho hoy · racha de ${d.racha} ${d.racha===1?'día':'días'}`:`Hoy: llega a ${metaHoy()} pisos${d.racha?` · racha de ${d.racha}`:''}`;
+  const b=est.best,c=est.combo;$('#records').innerHTML=b?`<span class="rec">🏆 Récord: ${b} pisos</span>${c?`<span class="rec">✨ Mejor racha: ${c}</span>`:''}`:'';}
+pintarMenu();
+
+arrancarComun();
+</script>
+</body>
+</html>

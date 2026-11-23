@@ -9,7 +9,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="app-version" content="1.0">
+<meta name="app-version" content="1.0.1">
 <meta name="theme-color" content="#14325c">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="manifest" href="manifest.webmanifest">
@@ -189,7 +189,8 @@ h1,h2,h3{line-height:1.15}
 <div id="sr" class="sr-only" aria-live="polite"></div>
 <script>
 const CFG={"repo": "torre-azulejos", "pre": "ta", "nombre": "Torre de Azulejos", "corto": "Torre de Azulejos", "color": "#14325c", "aviso": "Juego de habilidad para entretenerse. Los azulejos están inspirados en la lacería andalusí, pero son dibujos propios de la app y no reproducen ningún alicatado real.", "soporte": "https://github.com/indalo-apps/torre-azulejos/issues"};
-const NOVEDADES=[["1.0", ["🧱 Primera versión: apila azulejos de lacería con un toque", "✨ «¡Perfecto!» al acertar justo; con 3 seguidos el azulejo vuelve a crecer", "📅 Reto del día: una altura distinta cada día y racha de días cumplidos", "🏆 Récord y mejor racha de perfectos guardados en el móvil", "📲 Se instala en el móvil, funciona sin conexión y se actualiza sola"]]];
+const NOVEDADES=[["1.0.1",["📲 Ayuda para instalar al día con iOS 27: el botón de tres rayas dentro de la barra de la dirección"]],
+  ["1.0", ["🧱 Primera versión: apila azulejos de lacería con un toque", "✨ «¡Perfecto!» al acertar justo; con 3 seguidos el azulejo vuelve a crecer", "📅 Reto del día: una altura distinta cada día y racha de días cumplidos", "🏆 Récord y mejor racha de perfectos guardados en el móvil", "📲 Se instala en el móvil, funciona sin conexión y se actualiza sola"]]];
 window.APP={};
 /* ===================== PIEZAS COMUNES (indalo-apps) ===================== */
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
@@ -328,6 +329,7 @@ addEventListener('appinstalled',()=>{deferredPrompt=null;store.set(P+'-install-h
 async function installNow(){if(!deferredPrompt)return;deferredPrompt.prompt();try{await deferredPrompt.userChoice}catch(e){}deferredPrompt=null;renderInstallBanner()}
 const SHARE_SVG='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M8 7l4-4 4 4"/><path d="M6 11H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1"/></svg>';
 const DOTS_SVG='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>';
+const MENU3_SVG='<svg viewBox="0 0 24 24"><path d="M5 7h14M5 12h14M5 17h10"/></svg>';
 const HDOTS_SVG='<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg>';
 const PLUS_SVG='<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M12 8v8M8 12h8"/></svg>';
 function openInstall(){
@@ -354,7 +356,7 @@ function openInstall(){
         <li><span>Elige <b>«Añadir a pantalla de inicio»</b> ${PLUS_SVG}. Si no está, toca <b>«Más»</b> o baja en la lista.</span></li>${end}</ol>`;
     }else if(maj>=26){
       body=ver+`<ol class="steps">
-        <li><span>Toca el botón <b>···</b> ${HDOTS_SVG} que está a la derecha de la barra de la dirección${IS_IPAD?' (arriba)':' (abajo)'}.</span></li>
+        <li><span>${maj>=27&&!IS_IPAD?`Toca el botón ${MENU3_SVG} de tres rayas que está a la izquierda, dentro de la barra de la dirección (abajo).`:`Toca el botón ${HDOTS_SVG} que está a la derecha de la barra de la dirección${IS_IPAD?' (arriba)':' (abajo)'}.`}</span></li>
         <li><span>Toca <b>«Compartir»</b> ${SHARE_SVG}.</span></li>
         <li><span>Toca <b>«Ver más»</b> si hace falta, baja en la lista y elige <b>«Añadir a pantalla de inicio»</b> ${PLUS_SVG}.</span></li>${end}</ol>`;
     }else{
